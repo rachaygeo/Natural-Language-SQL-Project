@@ -1,0 +1,62 @@
+{
+  "strategy": "single_domain_double_shot",
+  "prompt_prefix": "create table Players (\n    player_id integer primary key,\n    curr_area integer not null,\n    hours_played integer,\n    foreign key (curr_area) references Areas (area_id)\n);\n\ncreate table Areas (\n    area_id integer primary key,\n    name varchar(100) not null,\n    num_benches integer\n);\n\ncreate table Enemies (\n    enemy_id integer primary key,\n    area_id integer not null,\n    name varchar(100),\n    health integer,\n    foreign key (area_id) references Areas (area_id)\n);\n\ncreate table Bosses (\n    boss_id integer primary key,\n    area_id integer not null,\n    name varchar(100),\n    health integer,\n    foreign key (area_id) references Areas (area_id)\n);\n\ncreate table Players_Bosses (\n    player_id integer not null,\n    boss_id integer not null,\n    foreign key (player_id) references Players (player_id),\n    foreign key (boss_id) references Bosses (boss_id)\n);\n\ncreate table Items (\n    item_id integer primary key,\n    player_id integer not null,\n    name varchar(100),\n    amount integer,\n    foreign key (player_id) references Players (player_id)\n);\n Who hasn't defeated any bosses?  \nSELECT p.player_id\nFROM Players p\nLEFT JOIN Players_Bosses pb ON p.player_id = pb.player_id IS NULL;\n  Give me a sqlite select statement that answers the question. Only respond with sqlite syntax. If there is an error do not explain it!",
+  "questionResults": [
+    {
+      "question": "Which players carry the most items?",
+      "sql": "SELECT player_id\nFROM Items\nGROUP BY player_id\nORDER BY SUM(amount) DESC;",
+      "queryRawResponse": "[(3,), (2,), (4,), (1,)]",
+      "friendlyResponse": "Players carrying the most items are: 4, 3, 2, and 1.",
+      "error": "None"
+    },
+    {
+      "question": "Which players have defeated multiple bosses?",
+      "sql": "SELECT pb.player_id\nFROM Players_Bosses pb\nGROUP BY pb.player_id\nHAVING COUNT(pb.boss_id) > 1;",
+      "queryRawResponse": "[(1,), (3,)]",
+      "friendlyResponse": "Player 1 and Player 3 have defeated multiple bosses.",
+      "error": "None"
+    },
+    {
+      "question": "Which bosses have been defeated by multiple players?",
+      "sql": "SELECT pb.boss_id\nFROM Players_Bosses pb\nGROUP BY pb.boss_id\nHAVING COUNT(DISTINCT pb.player_id) > 1;",
+      "queryRawResponse": "[(3,), (5,)]",
+      "friendlyResponse": "Bosses that have been defeated by multiple players include Boss 3 and Boss 5.",
+      "error": "None"
+    },
+    {
+      "question": "What are the top 3 areas players are currently located at?",
+      "sql": "SELECT curr_area, COUNT(player_id) as num_players\nFROM Players\nGROUP BY curr_area\nORDER BY num_players DESC\nLIMIT 3;",
+      "queryRawResponse": "[(5, 2), (4, 2), (3, 1)]",
+      "friendlyResponse": "The top 3 areas players are currently located at are (5, 2), (4, 2), and (3, 1).",
+      "error": "None"
+    },
+    {
+      "question": "Who has defeated more than 2 bosses?",
+      "sql": "SELECT p.player_id\nFROM Players p\nJOIN Players_Bosses pb ON p.player_id = pb.player_id\nGROUP BY p.player_id\nHAVING COUNT(pb.boss_id) > 2;",
+      "queryRawResponse": "[(3,)]",
+      "friendlyResponse": "Three individuals have defeated more than 2 bosses.",
+      "error": "None"
+    },
+    {
+      "question": "Who has more than 30 hours of game play?",
+      "sql": "SELECT player_id\nFROM Players\nWHERE hours_played > 30;",
+      "queryRawResponse": "[(3,), (4,)]",
+      "friendlyResponse": "Two users have more than 30 hours of game play.",
+      "error": "None"
+    },
+    {
+      "question": "Who hasn't defeated any bosses?",
+      "sql": "SELECT p.player_id\nFROM Players p\nLEFT JOIN Players_Bosses pb ON p.player_id = pb.player_id IS NULL;",
+      "queryRawResponse": "[(1,), (2,), (3,), (4,), (5,)]",
+      "friendlyResponse": "Looks like 5 people haven't defeated any bosses yet!",
+      "error": "None"
+    },
+    {
+      "question": "Will we have a problem getting the name and amount of items each player has collected?",
+      "sql": "SELECT p.player_id, i.name, i.amount\nFROM Players p\nLEFT JOIN Items i ON p.player_id = i.player_id;",
+      "queryRawResponse": "[(1, 'Simple Key', 1), (2, 'Geo', 2000), (2, 'Rancid Egg', 5), (3, 'Geo', 3000), (3, 'Hallownest Seal', 2), (3, 'Pale Ore', 3), (4, 'Geo', 1000), (5, None, None)]",
+      "friendlyResponse": "No problem, here is the concise response: \n\nYes, we can get the name and amount of items each player has collected.",
+      "error": "None"
+    }
+  ]
+}

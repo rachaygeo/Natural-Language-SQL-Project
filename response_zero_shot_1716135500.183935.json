@@ -1,0 +1,62 @@
+{
+  "strategy": "zero_shot",
+  "prompt_prefix": "create table Players (\n    player_id integer primary key,\n    curr_area integer not null,\n    hours_played integer,\n    foreign key (curr_area) references Areas (area_id)\n);\n\ncreate table Areas (\n    area_id integer primary key,\n    name varchar(100) not null,\n    num_benches integer\n);\n\ncreate table Enemies (\n    enemy_id integer primary key,\n    area_id integer not null,\n    name varchar(100),\n    health integer,\n    foreign key (area_id) references Areas (area_id)\n);\n\ncreate table Bosses (\n    boss_id integer primary key,\n    area_id integer not null,\n    name varchar(100),\n    health integer,\n    foreign key (area_id) references Areas (area_id)\n);\n\ncreate table Players_Bosses (\n    player_id integer not null,\n    boss_id integer not null,\n    foreign key (player_id) references Players (player_id),\n    foreign key (boss_id) references Bosses (boss_id)\n);\n\ncreate table Items (\n    item_id integer primary key,\n    player_id integer not null,\n    name varchar(100),\n    amount integer,\n    foreign key (player_id) references Players (player_id)\n);\n Give me a sqlite select statement that answers the question. Only respond with sqlite syntax. If there is an error do not explain it!",
+  "questionResults": [
+    {
+      "question": "Which players carry the most items?",
+      "sql": "SELECT player_id\nFROM Items\nGROUP BY player_id\nORDER BY SUM(amount) DESC\nLIMIT 1;",
+      "queryRawResponse": "[(3,)]",
+      "friendlyResponse": "Three players carry the most items.",
+      "error": "None"
+    },
+    {
+      "question": "Which players have defeated multiple bosses?",
+      "sql": "SELECT player_id\nFROM Players_Bosses\nGROUP BY player_id\nHAVING COUNT(*) > 1;",
+      "queryRawResponse": "[(1,), (3,)]",
+      "friendlyResponse": "Player 1 and Player 3 have each defeated multiple bosses.",
+      "error": "None"
+    },
+    {
+      "question": "Which bosses have been defeated by multiple players?",
+      "sql": "SELECT boss_id\nFROM Players_Bosses\nGROUP BY boss_id\nHAVING COUNT(player_id) > 1;",
+      "queryRawResponse": "[(3,), (5,)]",
+      "friendlyResponse": "Bosses 3 and 5 have been defeated by multiple players.",
+      "error": "None"
+    },
+    {
+      "question": "What are the top 3 areas players are currently located at?",
+      "sql": "SELECT Areas.name, COUNT(Players.curr_area) as player_count\nFROM Players\nJOIN Areas ON Players.curr_area = Areas.area_id\nGROUP BY Areas.name\nORDER BY player_count DESC\nLIMIT 3;",
+      "queryRawResponse": "[('Deepnest', 2), ('City of Tears', 2), ('Fungal Wastes', 1)]",
+      "friendlyResponse": "The top 3 areas players are currently located at are Deepnest, City of Tears, and Fungal Wastes.",
+      "error": "None"
+    },
+    {
+      "question": "Who has defeated more than 2 bosses?",
+      "sql": "SELECT p.player_id\nFROM Players p\nJOIN Players_Bosses pb ON p.player_id = pb.player_id\nGROUP BY p.player_id\nHAVING COUNT(pb.boss_id) > 2;",
+      "queryRawResponse": "[(3,)]",
+      "friendlyResponse": "Three people have defeated more than 2 bosses.",
+      "error": "None"
+    },
+    {
+      "question": "Who has more than 30 hours of game play?",
+      "sql": "SELECT player_id\nFROM Players\nWHERE hours_played > 30;",
+      "queryRawResponse": "[(3,), (4,)]",
+      "friendlyResponse": "Both players (3 and 4) have more than 30 hours of game play.",
+      "error": "None"
+    },
+    {
+      "question": "Who hasn't defeated any bosses?",
+      "sql": "SELECT player_id\nFROM Players\nWHERE player_id NOT IN (SELECT player_id FROM Players_Bosses);",
+      "queryRawResponse": "[(5,)]",
+      "friendlyResponse": "One person hasn't defeated any bosses.",
+      "error": "None"
+    },
+    {
+      "question": "Will we have a problem getting the name and amount of items each player has collected?",
+      "sql": "SELECT Players.player_id, Items.name, Items.amount\nFROM Players\nINNER JOIN Items ON Players.player_id = Items.player_id;",
+      "queryRawResponse": "[(3, 'Pale Ore', 3), (2, 'Rancid Egg', 5), (3, 'Hallownest Seal', 2), (2, 'Geo', 2000), (4, 'Geo', 1000), (3, 'Geo', 3000), (1, 'Simple Key', 1)]",
+      "friendlyResponse": "No problem at all! Here is the list of items each player has collected:\n- Player 1: 3 Pale Ore\n- Player 2: 5 Rancid Egg\n- Player 3: 2 Hallownest Seal, 2000 Geo\n- Player 4: 1000 Geo\n- Player 5: 3000 Geo\n- Player 6: 1 Simple Key",
+      "error": "None"
+    }
+  ]
+}
