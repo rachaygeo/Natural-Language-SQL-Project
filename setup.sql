@@ -1,49 +1,43 @@
-CREATE TABLE `Players` (
-  `player_id` integer PRIMARY KEY,
-  `curr_area` integer,
-  `hours_played` integer
+create table Players (
+    player_id integer primary key,
+    curr_area integer not null,
+    hours_played integer,
+    foreign key (curr_area) references Areas (area_id)
 );
 
-CREATE TABLE `Areas` (
-  `area_id` integer PRIMARY KEY,
-  `name` varchar(100),
-  `num_benches` smallint
+create table Areas (
+    area_id integer primary key,
+    name varchar(100) not null,
+    num_benches integer
 );
 
-CREATE TABLE `Enemies` (
-  `enemy_id` integer PRIMARY KEY,
-  `name` varchar(50),
-  `health` integer,
-  `area_id` integer
+create table Enemies (
+    enemy_id integer primary key,
+    area_id integer not null,
+    name varchar(100),
+    health integer,
+    foreign key (area_id) references Areas (area_id)
 );
 
-CREATE TABLE `Bosses` (
-  `boss_id` integer PRIMARY KEY,
-  `name` varchar(50),
-  `health` integer,
-  `area_id` integer
+create table Bosses (
+    boss_id integer primary key,
+    area_id integer not null,
+    name varchar(100),
+    health integer,
+    foreign key (area_id) references Areas (area_id)
 );
 
-CREATE TABLE `Players_Bosses` (
-  `player_id` integer,
-  `boss_id` integer
+create table Players_Bosses (
+    player_id integer not null,
+    boss_id integer not null,
+    foreign key (player_id) references Players (player_id),
+    foreign key (boss_id) references Bosses (boss_id)
 );
 
-CREATE TABLE `Items` (
-  `item_id` integer PRIMARY KEY,
-  `player_id` integer,
-  `name` varchar(50),
-  `amount` integer
+create table Items (
+    item_id integer primary key,
+    player_id integer not null,
+    name varchar(100),
+    amount integer,
+    foreign key (player_id) references Players (player_id)
 );
-
-ALTER TABLE `Players` ADD FOREIGN KEY (`curr_area`) REFERENCES `Areas` (`area_id`);
-
-ALTER TABLE `Enemies` ADD FOREIGN KEY (`area_id`) REFERENCES `Areas` (`area_id`);
-
-ALTER TABLE `Bosses` ADD FOREIGN KEY (`area_id`) REFERENCES `Areas` (`area_id`);
-
-ALTER TABLE `Players_Bosses` ADD FOREIGN KEY (`player_id`) REFERENCES `Players` (`player_id`);
-
-ALTER TABLE `Players_Bosses` ADD FOREIGN KEY (`boss_id`) REFERENCES `Bosses` (`boss_id`);
-
-ALTER TABLE `Items` ADD FOREIGN KEY (`player_id`) REFERENCES `Players` (`player_id`);
