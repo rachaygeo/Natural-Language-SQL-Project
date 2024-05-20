@@ -54,7 +54,7 @@ openAiClient = OpenAI(
 
 def getChatGptResponse(content):
     stream = openAiClient.chat.completions.create(
-        model="gpt-4-1106-preview",
+        model="gpt-3.5-turbo",
         messages=[{"role": "user", "content": content}],
         stream=True,
     )
@@ -69,25 +69,24 @@ def getChatGptResponse(content):
 
 
 # strategies
-commonSqlOnlyRequest = " Give me a sqlite select statement that answers the question. Only respond with sqlite syntax. If there is an error do not expalin it!"
+commonSqlOnlyRequest = " Give me a sqlite select statement that answers the question. Only respond with sqlite syntax. If there is an error do not explain it!"
 strategies = {
     "zero_shot": setupSqlScript + commonSqlOnlyRequest,
     "single_domain_double_shot": (setupSqlScript +
-                                  " Who doesn't have a way for us to text them? " +
-                                  " \nSELECT p.person_id, p.name\nFROM person p\nLEFT JOIN phone ph ON p.person_id = ph.person_id AND ph.can_recieve_sms = 1\nWHERE ph.phone_id IS NULL;\n " +
+                                  " Who hasn't defeated any bosses? " +
+                                  " \nSELECT p.player_id\nFROM Players p\nLEFT JOIN Players_Bosses pb ON p.player_id = pb.player_id IS NULL;\n " +
                                   commonSqlOnlyRequest)
 }
 
 questions = [
-    "Which are the most awarded dogs?",
-    "Which dogs have multiple owners?",
-    "Which people have multiple dogs?",
-    "What are the top 3 cities represented?",
-    "What are the names and cities of the dogs who have awards?",
-    "Who has more than one phone number?",
-    "Who doesn't have a way for us to text them?",
-    "Will we have a problem texting any of the previous award winners?"
-    # "I need insert sql into my tables can you provide good unique data?"
+    "Which players carry the most items?",
+    "Which players have defeated multiple bosses?",
+    "Which bosses have been defeated by multiple players?",
+    "What are the top 3 areas players are currently located at?",
+    "Who has defeated more than 2 bosses?",
+    "Who has more than 30 hours of game play?",
+    "Who hasn't defeated any bosses?",
+    "Will we have a problem getting the name and amount of items each player has collected?"
 ]
 
 
@@ -108,6 +107,9 @@ for strategy in strategies:
     for question in questions:
         print(question)
         error = "None"
+        sqlSyntaxResponse = ""
+        queryRawResponse = ""
+        friendlyResponse = ""
         try:
             sqlSyntaxResponse = getChatGptResponse(strategies[strategy] + " " + question)
             sqlSyntaxResponse = sanitizeForJustSql(sqlSyntaxResponse)
